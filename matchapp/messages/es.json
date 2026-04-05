@@ -1,0 +1,21 @@
+{
+  "Login": {
+    "title": "Iniciar Sesión",
+    "subtitle": "Panel de Control Web",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "Entrar al Panel",
+    "loading": "Cargando...",
+    "errorEmpty": "Por favor, completa todos los campos."
+  },
+  "Dashboard": {
+    "greeting": "¡Hola, {username}!",
+    "reliability": "Fiabilidad",
+    "elo": "ELO Global",
+    "pts": "pts",
+    "successMessage": "Conectado exitosamente al Backend de Node.js. Próximamente: Mapa interactivo en la web.",
+    "logoutButton": "Cerrar Sesión"
+  }
+}

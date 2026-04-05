@@ -1,0 +1,21 @@
+{
+  "Login": {
+    "title": "Sign In",
+    "subtitle": "Web Control Panel",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "Enter Panel",
+    "loading": "Loading...",
+    "errorEmpty": "Please fill in all fields."
+  },
+  "Dashboard": {
+    "greeting": "Hello, {username}!",
+    "reliability": "Reliability",
+    "elo": "Global ELO",
+    "pts": "pts",
+    "successMessage": "Successfully connected to Node.js Backend. Coming soon: Interactive web map.",
+    "logoutButton": "Sign Out"
+  }
+}
