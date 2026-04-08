@@ -126,28 +126,36 @@ function CreateMatchForm() {
 
     setIsSubmitting(true);
     try {
-      // 1. FORMA SEGURA DE MANEJAR LA HORA LOCAL DEL USUARIO
-      // Extraemos año, mes, día, hora y minuto
-      const [year, month, day] = matchDate.split('-');
+      
+      const localStartDateString = `${matchDate}T${matchTime}:00.000Z`;
+      
       const [hours, minutes] = matchTime.split(':');
+      let endHours = parseInt(hours) + 2;
+      let endDay = matchDate;
       
-      // Creamos la fecha forzando a que JavaScript use el huso horario local de la computadora
-      const startDateTime = new Date(year, month - 1, day, hours, minutes);
+      if (endHours >= 24) {
+        endHours -= 24;
+        const dateObj = new Date(matchDate);
+        dateObj.setDate(dateObj.getDate() + 1);
+        endDay = dateObj.toISOString().split('T')[0];
+      }
       
-      // Calculamos el final del partido (+2 horas)
-      const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000);
+      const formattedEndHours = endHours.toString().padStart(2, '0');
+      const localEndDateString = `${endDay}T${formattedEndHours}:${minutes}:00.000Z`;
 
       const matchData = {
         sport_format_id: selectedFormat,
         creator_team_id: requiresTeam ? parseInt(selectedTeam) : null,
-        // Usamos toISOString() que es el formato estándar ISO 8601 (UTC) que PostgreSQL ama
-        time_start_window: startDateTime.toISOString(),
-        time_end_window: endDateTime.toISOString(),
+        time_start_window: localStartDateString, // <-- Mandamos el "Z" falso
+        time_end_window: localEndDateString,
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng
       };
 
+      console.log("🚩 [FRONTEND] Enviando al Backend la hora exacta:", matchData.time_start_window);
+
       await axios.post('/matches', matchData, { headers: { Authorization: `Bearer ${userToken}` }});
+      
       router.push('/explore');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al publicar el partido.');

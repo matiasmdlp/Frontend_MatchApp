@@ -79,7 +79,7 @@ export default function Home() {
             {/* COLUMNA 1: POR EVALUAR (URGENTES) */}
             <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
-                <span>🏆 Tercer Tiempo</span>
+                <span>🏆 Evalua a tu Rival</span>
                 <span className="bg-red-100 text-red-600 text-xs py-1 px-3 rounded-full font-bold">{toEvaluateMatches.length}</span>
               </h2>
               {toEvaluateMatches.length === 0 ? <p className="text-gray-400 text-sm italic">Todo evaluado al día.</p> : (
@@ -91,7 +91,7 @@ export default function Home() {
                       <span className="text-xs bg-red-200 text-red-700 px-2 py-0.5 rounded font-bold">{match.format_name}</span>
                     </div>
                     <p className="text-xs text-red-600 font-medium mb-1">
-                      📅 {new Date(match.time_start_window).toLocaleDateString()} - {new Date(match.time_start_window).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      📅 {match.time_start_window.split('T')[0].split('-').reverse().join('/')} a las {match.time_start_window.split('T')[1].substring(0, 5)}
                     </p>
                     <p className="text-xs text-gray-600 font-bold mb-3 border-t border-red-100 pt-2 mt-2">
                       ⚔️ Jugado contra: {match.is_creator ? (match.challenger_name || 'Desconocido') : (match.creator_name || 'Desconocido')}
@@ -119,7 +119,7 @@ export default function Home() {
                       <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded font-bold">{match.format_name}</span>
                     </div>
                     <p className="text-xs text-green-700 font-bold mb-1">
-                      📅 {new Date(match.time_start_window).toLocaleDateString()} - 🕒 {new Date(match.time_start_window).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      📅 {match.time_start_window.split('T')[0].split('-').reverse().join('/')} a las {match.time_start_window.split('T')[1].substring(0, 5)}
                     </p>
                     <p className="text-xs text-gray-600 font-bold mb-3 border-t border-green-100 pt-2 mt-2">
                       ⚔️ Rival: {match.is_creator ? (match.challenger_name || 'Desconocido') : (match.creator_name || 'Desconocido')}
@@ -147,7 +147,7 @@ export default function Home() {
                       <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded font-bold">{match.format_name}</span>
                     </div>
                     <p className="text-xs text-blue-600 font-bold mb-3">
-                      📅 {new Date(match.time_start_window).toLocaleDateString()} - 🕒 {new Date(match.time_start_window).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      📅 {match.time_start_window.split('T')[0].split('-').reverse().join('/')} a las {match.time_start_window.split('T')[1].substring(0, 5)}
                     </p>
                     <p className="text-xs text-gray-500 italic mb-3 border-t border-blue-100 pt-2 mt-2">
                       Esperando que alguien acepte el desafío...
@@ -170,12 +170,20 @@ export default function Home() {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
       {/* ... Tu código de formulario de Login (sigue igual) ... */}
-      <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-600 tracking-tight text-center mb-8">SportMatch Web</h1>
+      <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-600 tracking-tight text-center mb-8">MatchApp Web</h1>
       <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
         <form onSubmit={handleLogin} className="space-y-5">
           <input type="email" className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input type="password" className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} />
           <button type="submit" className="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl">{isSubmitting ? "Cargando..." : "Entrar"}</button>
+          <div className="mt-6 text-center">
+            <p className="text-gray-500 text-sm font-medium">
+              ¿No tienes una cuenta?{' '}
+              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-bold transition-colors">
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

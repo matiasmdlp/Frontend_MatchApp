@@ -68,6 +68,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (username, email, password) => {
+    try {
+      const response = await axios.post('/auth/register', { username, email, password });
+      const { token, user } = response.data;
+      
+      // Auto-loguear al usuario tras registrarse con éxito
+      setUserToken(token);
+      setUserInfo(user);
+      
+      localStorage.setItem('userToken', token);
+      localStorage.setItem('userInfo', JSON.stringify(user));
+    } catch (error) {
+      throw error.response?.data?.error || 'Error al registrarse';
+    }
+  };
+
   // 3. FUNCIÓN DE LOGOUT
   const logout = () => {
     setUserToken(null);
@@ -77,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ login, logout, userToken, userInfo, isLoading }}>
+    <AuthContext.Provider value={{ login, register, logout, userToken, userInfo, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

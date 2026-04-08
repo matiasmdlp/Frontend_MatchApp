@@ -64,43 +64,45 @@ export default function MapExplorer({ filterSport, filterFormat }) {
   if (isLoading) return <div className="flex justify-center items-center h-full text-gray-500">Cargando mapa interactivo...</div>;
 
   return (
-    <MapContainer center={userLocation} zoom={13} scrollWheelZoom={true} className="w-full h-full z-0">
-      
-      {/* AÑADE EL CONTROLADOR AQUÍ */}
-      <MapController center={userLocation} />
+    <div className="w-full h-full min-h-[400px] relative z-0">
+      <MapContainer center={userLocation} zoom={13} scrollWheelZoom={true} cstyle={{ height: '100%', width: '100%', zIndex: 0 }}>
+        
+        {/* AÑADE EL CONTROLADOR AQUÍ */}
+        <MapController center={userLocation} />
 
-      <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-      {filteredMatches.map((match) => (
-        <Marker key={match.id} position={[match.latitude, match.longitude]} icon={createCustomIcon(match.sport_name === 'Fútbol' ? 'green' : 'blue')}>
-          <Popup>
-            <div className="text-center p-2 min-w-[150px]">
-              <h3 className="font-bold text-lg text-gray-800">{match.sport_name}</h3>
-              <p className="text-sm text-gray-600 font-medium mb-2">{match.format_name}</p>
-              <p className="text-xs text-blue-600 font-bold mb-3">
-                📅 {new Date(match.time_start_window).toLocaleDateString()} a las {new Date(match.time_start_window).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-              </p>
-              <button 
-                className={`${match.is_mine ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white font-bold py-2 px-4 rounded w-full transition-colors shadow-md`}
-                onClick={async () => {
-                  if (match.is_mine) {
-                    if(window.confirm('¿Seguro que quieres eliminar este partido que creaste?')) {
-                      try {
-                        await axios.delete(`/matches/${match.id}`, { headers: { Authorization: `Bearer ${userToken}` }});
-                        window.location.reload(); // Recargamos para que desaparezca el pin
-                      } catch (e) { alert("No se pudo cancelar"); }
+        {filteredMatches.map((match) => (
+          <Marker key={match.id} position={[match.latitude, match.longitude]} icon={createCustomIcon(match.sport_name === 'Fútbol' ? 'green' : 'blue')}>
+            <Popup>
+              <div className="text-center p-2 min-w-[150px]">
+                <h3 className="font-bold text-lg text-gray-800">{match.sport_name}</h3>
+                <p className="text-sm text-gray-600 font-medium mb-2">{match.format_name}</p>
+                <p className="text-xs text-blue-600 font-bold mb-3">
+                  📅 {match.time_start_window.split('T')[0].split('-').reverse().join('/')} a las {match.time_start_window.split('T')[1].substring(0, 5)}
+                </p>
+                <button 
+                  className={`${match.is_mine ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white font-bold py-2 px-4 rounded w-full transition-colors shadow-md`}
+                  onClick={async () => {
+                    if (match.is_mine) {
+                      if(window.confirm('¿Seguro que quieres eliminar este partido que creaste?')) {
+                        try {
+                          await axios.delete(`/matches/${match.id}`, { headers: { Authorization: `Bearer ${userToken}` }});
+                          window.location.reload(); // Recargamos para que desaparezca el pin
+                        } catch (e) { alert("No se pudo cancelar"); }
+                      }
+                    } else {
+                      router.push(`/match-lobby/${match.id}`);
                     }
-                  } else {
-                    router.push(`/match-lobby/${match.id}`);
-                  }
-                }}
-              >
-                {match.is_mine ? 'Cancelar (Creado por mí)' : 'Ver Detalles / Unirse'}
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+                  }}
+                >
+                  {match.is_mine ? 'Cancelar (Creado por mí)' : 'Ver Detalles / Unirse'}
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 }

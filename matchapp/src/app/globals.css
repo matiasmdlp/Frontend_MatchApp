@@ -35,3 +35,10 @@ body {
   height: 100%;
   z-index: 10;
 }
+
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 400px; 
+  z-index: 10;
+}

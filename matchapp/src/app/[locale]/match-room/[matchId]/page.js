@@ -27,6 +27,13 @@ export default function WebMatchRoom() {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+
+  const [socket, setSocket] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedWinner, setSelectedWinner] = useState(''); // 'CREATOR', 'CHALLENGER', 'DRAW'
+  const [rivalAttended, setRivalAttended] = useState(true);
+  const [isReporting, setIsReporting] = useState(false);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -36,14 +43,18 @@ export default function WebMatchRoom() {
     if (!matchId || !userToken) return;
     
     const fetchMatch = async () => {
-      try {
-        const response = await axios.get(`/matches/${matchId}`, {
-          headers: { Authorization: `Bearer ${userToken}` }
-        });
-        setMatchData(response.data);
-      } catch (error) {
-        console.error("Error cargando sala:", error);
-      }
+      const response = await axios.get(`/matches/${matchId}`, { headers: { Authorization: `Bearer ${userToken}` }});
+        const data = response.data;
+        setMatchData(data);
+
+        if (data.status === 'PENDING_RESULT') {
+          const isCreator = data.is_me_creator;
+          const isChallenger = data.is_me_challenger;
+          
+          if ((isCreator && !data.creator_reported_winner) || (isChallenger && !data.challenger_reported_winner)) {
+             setShowReportModal(true);
+          }
+        }
     };
     fetchMatch();
   }, [matchId, userToken]);
@@ -108,6 +119,27 @@ export default function WebMatchRoom() {
     return null;
   };
 
+  const handleReportResult = async () => {
+    if (!selectedWinner && rivalAttended) return alert('Debes seleccionar quién ganó o si fue empate.');
+
+    setIsReporting(true);
+    try {
+      const response = await axios.post(`/matches/${matchId}/report`, {
+        reported_winner: selectedWinner,
+        rival_attended: rivalAttended
+      }, { headers: { Authorization: `Bearer ${userToken}` }});
+      
+      alert(response.data.message);
+      setShowReportModal(false);
+      window.location.href = '/'; // Devolver al Dashboard
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error al enviar el reporte.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
+
   if (isLoading || !matchData) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -148,7 +180,7 @@ export default function WebMatchRoom() {
 
             {/* FECHA Y HORA (Nueva adición) */}
             <div className="inline-flex items-center bg-gray-700 text-gray-200 px-3 py-1 rounded-md text-xs font-bold border border-gray-600">
-              📅 {new Date(matchData.time_start_window).toLocaleDateString()} a las {new Date(matchData.time_start_window).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              📅 {matchData.time_start_window.split('T')[0].split('-').reverse().join('/')} a las {matchData.time_start_window.split('T')[1]}
             </div>
           </div>
           
@@ -263,6 +295,73 @@ export default function WebMatchRoom() {
           </div>
         </div>
       )}
+
+      
+      {/* MODAL: REPORTE DE RESULTADOS */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in duration-300">
+            
+            <div className="text-center mb-6">
+              <span className="text-6xl block mb-2">🏆</span>
+              <h2 className="text-3xl font-extrabold text-gray-800">¡El partido terminó!</h2>
+              <p className="text-gray-500 font-medium mt-2">Por favor, ingresa el resultado con honestidad. Las mentiras bajan tu Karma.</p>
+            </div>
+            
+            {/* PREGUNTA 1: ASISTENCIA */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-700 mb-3 text-center">¿Se presentó el rival a jugar?</h3>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setRivalAttended(true)}
+                  className={`flex-1 py-4 rounded-2xl font-bold border-2 transition-all ${rivalAttended ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                >
+                  Sí, llegó 👍
+                </button>
+                <button 
+                  onClick={() => setRivalAttended(false)}
+                  className={`flex-1 py-4 rounded-2xl font-bold border-2 transition-all ${!rivalAttended ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                >
+                  No apareció 👎
+                </button>
+              </div>
+            </div>
+
+            {/* PREGUNTA 2: RESULTADO (Solo si llegó) */}
+            {rivalAttended && (
+              <div className="mb-8 space-y-3 animate-in slide-in-from-top-2">
+                <h3 className="text-lg font-bold text-gray-700 mb-3 text-center">¿Cuál fue el resultado final?</h3>
+                
+                <button onClick={() => setSelectedWinner('CREATOR')} className={`w-full py-4 px-6 rounded-2xl font-bold text-left border-2 transition-all flex justify-between items-center ${selectedWinner === 'CREATOR' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <span>Ganó: {matchData?.creator_name}</span>
+                  {selectedWinner === 'CREATOR' && <span>✅</span>}
+                </button>
+
+                <button onClick={() => setSelectedWinner('DRAW')} className={`w-full py-4 px-6 rounded-2xl font-bold text-left border-2 transition-all flex justify-between items-center ${selectedWinner === 'DRAW' ? 'bg-gray-100 border-gray-500 text-gray-800' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <span>Empate 🤝</span>
+                  {selectedWinner === 'DRAW' && <span>✅</span>}
+                </button>
+
+                <button onClick={() => setSelectedWinner('CHALLENGER')} className={`w-full py-4 px-6 rounded-2xl font-bold text-left border-2 transition-all flex justify-between items-center ${selectedWinner === 'CHALLENGER' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <span>Ganó: {matchData?.challenger_name}</span>
+                  {selectedWinner === 'CHALLENGER' && <span>✅</span>}
+                </button>
+              </div>
+            )}
+
+            {/* BOTÓN ENVIAR */}
+            <button 
+              onClick={handleReportResult}
+              disabled={isReporting || (rivalAttended && !selectedWinner)}
+              className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-extrabold py-5 rounded-2xl transition-all shadow-lg hover:shadow-xl flex justify-center items-center"
+            >
+              {isReporting ? <div className="animate-spin h-6 w-6 border-4 border-white border-t-transparent rounded-full"></div> : 'Enviar Reporte Oficial'}
+            </button>
+
+          </div>
+        </div>
+      )}
+
     </div>
     
     

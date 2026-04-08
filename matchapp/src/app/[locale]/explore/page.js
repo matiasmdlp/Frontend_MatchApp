@@ -85,10 +85,20 @@ export default function ExplorePage() {
       </div>
 
       {/* ÁREA DEL MAPA */}
-      <div className="w-full md:w-3/4 lg:w-4/5 bg-white p-2 rounded-3xl shadow-lg border border-gray-200 min-h-[60vh] flex flex-col relative z-0">
-        <div className="flex-1 rounded-2xl overflow-hidden border-2 border-gray-100 relative z-0">
-           {/* Le pasamos los filtros al mapa para que solo dibuje esos pines */}
-           <MapExplorer filterSport={selectedSport} filterFormat={selectedFormat} />
+      <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col relative z-0">
+        
+        <div className="bg-white p-2 md:p-4 rounded-3xl shadow-xl border border-gray-200 flex-1 flex flex-col min-h-[500px] md:min-h-[70vh]">
+          
+          <div className="hidden md:block px-4 pt-2 pb-4">
+            <h2 className="text-xl font-extrabold text-gray-800">Mapa Global</h2>
+            <p className="text-gray-500 text-sm font-medium">Encuentra y desafía servidores cerca de ti.</p>
+          </div>
+          
+          {/* EL CONTENEDOR VITAL: Le damos flex-1 y h-full absoluto */}
+          <div className="flex-1 w-full h-full min-h-[450px] rounded-2xl overflow-hidden border-2 border-gray-100 relative z-0">
+             <MapExplorer filterSport={selectedSport} filterFormat={selectedFormat} />
+          </div>
+
         </div>
       </div>
 
